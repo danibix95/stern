@@ -26,7 +26,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes/typed/core/v1"
+	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 )
 
@@ -82,7 +82,7 @@ func determineColor(podName string) (podColor, containerColor *color.Color) {
 }
 
 // Start starts tailing
-func (t *Tail) Start(ctx context.Context, i v1.PodInterface) {
+func (t *Tail) Start(ctx context.Context, i typedcorev1.PodInterface) {
 	t.podColor, t.containerColor = determineColor(t.PodName)
 
 	go func() {
@@ -103,7 +103,7 @@ func (t *Tail) Start(ctx context.Context, i v1.PodInterface) {
 			TailLines:    t.Options.TailLines,
 		})
 
-		stream, err := req.Stream()
+		stream, err := req.Stream(ctx)
 		if err != nil {
 			fmt.Println(errors.Wrapf(err, "Error opening stream to %s/%s: %s\n", t.Namespace, t.PodName, t.ContainerName))
 			return
@@ -140,7 +140,7 @@ func (t *Tail) Start(ctx context.Context, i v1.PodInterface) {
 						break
 					}
 				}
- 				if !matches {
+				if !matches {
 					continue OUTER
 				}
 			}
